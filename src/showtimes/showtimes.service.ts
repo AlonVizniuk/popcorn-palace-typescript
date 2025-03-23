@@ -16,57 +16,24 @@ export class ShowtimesService {
     ) { }
 
     async create(dto: CreateShowtimeDto): Promise<Showtime> {
-        const movie = await this.movieRepo.findOne({ where: { id: dto.movieId } });
-        if (!movie) {
-            throw new NotFoundException(`Movie with ID ${dto.movieId} not found`);
-        }
-
-        const start = new Date(dto.startTime);
-        const end = new Date(dto.endTime);
-
-        if (end <= start) {
-            throw new BadRequestException('endTime must be after startTime');
-        }
-
-        const actualDuration = (end.getTime() - start.getTime()) / 60000;
-        if (actualDuration < movie.duration) {
-            throw new BadRequestException(
-                `Showtime duration (${actualDuration} min) is less than movie duration (${movie.duration} min)`,
-            );
-        }
-
-        const existingShowtimes = await this.showtimeRepo.find({
-            where: { theater: dto.theater },
-        });
-
-        const overlaps = existingShowtimes.some((existing) => {
-            const existingStart = new Date(existing.startTime);
-            const existingEnd = new Date(existing.endTime);
-            return !(existingEnd <= start || existingStart >= end);
-        });
-
-        if (overlaps) {
-            throw new ConflictException(
-                `Another showtime already exists in "${dto.theater}" that overlaps with ${dto.startTime} - ${dto.endTime}`,
-            );
-        }
-
-        if (dto.price <= 0) {
-            throw new BadRequestException('Price must be greater than 0');
-        }
-
-        dto.price = Math.round(dto.price * 10) / 10;
-
+        await this.validateShowtime(dto);
         const showtime = this.showtimeRepo.create(dto);
         return this.showtimeRepo.save(showtime);
     }
 
     async update(id: number, dto: CreateShowtimeDto): Promise<Showtime> {
-        const existingShowtime = await this.showtimeRepo.findOne({ where: { id } });
-        if (!existingShowtime) {
+        const existing = await this.showtimeRepo.findOne({ where: { id } });
+        if (!existing) {
             throw new NotFoundException(`Showtime with ID ${id} not found`);
         }
 
+        await this.validateShowtime(dto, id);
+
+        Object.assign(existing, dto);
+        return this.showtimeRepo.save(existing);
+    }
+
+    private async validateShowtime(dto: CreateShowtimeDto, skipId?: number): Promise<void> {
         const movie = await this.movieRepo.findOne({ where: { id: dto.movieId } });
         if (!movie) {
             throw new NotFoundException(`Movie with ID ${dto.movieId} not found`);
@@ -79,39 +46,35 @@ export class ShowtimesService {
             throw new BadRequestException('endTime must be after startTime');
         }
 
-        const actualDuration = (end.getTime() - start.getTime()) / 60000;
-        if (actualDuration < movie.duration) {
+        const duration = (end.getTime() - start.getTime()) / 60000;
+        if (duration < movie.duration) {
             throw new BadRequestException(
-                `Showtime duration (${actualDuration} min) is less than movie duration (${movie.duration} min)`,
+                `Showtime duration (${duration} min) is less than movie duration (${movie.duration} min)`
             );
         }
 
-        const updatedTheater = dto.theater;
-        const otherShowtimes = await this.showtimeRepo.find({
-            where: { theater: updatedTheater },
+        const showtimes = await this.showtimeRepo.find({
+            where: { theater: dto.theater },
         });
 
-
-        const overlaps = otherShowtimes.some((existing) => {
-            if (Number(existing.id) === Number(id)) return false;
-            const existingStart = new Date(existing.startTime);
-            const existingEnd = new Date(existing.endTime);
-            return !(existingEnd <= start || existingStart >= end);
+        const overlaps = showtimes.some((s) => {
+            if (s.id === skipId) return false;
+            const sStart = new Date(s.startTime);
+            const sEnd = new Date(s.endTime);
+            return !(sEnd <= start || sStart >= end);
         });
 
         if (overlaps) {
             throw new ConflictException(
-                `Another showtime already exists in "${updatedTheater}" that overlaps with ${dto.startTime} - ${dto.endTime}`,
+                `Another showtime already exists in "${dto.theater}" that overlaps with ${dto.startTime} - ${dto.endTime}`
             );
         }
 
         if (dto.price <= 0) {
             throw new BadRequestException('Price must be greater than 0');
         }
-        dto.price = Math.round(dto.price * 10) / 10;
 
-        Object.assign(existingShowtime, dto);
-        return this.showtimeRepo.save(existingShowtime);
+        dto.price = Math.round(dto.price * 10) / 10;
     }
 
     async findOneById(id: number): Promise<Showtime> {

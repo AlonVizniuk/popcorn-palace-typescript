@@ -43,6 +43,7 @@ To run unit tests:
 ```bash
 npm run test
 ```
+These tests check core logic like movie creation, showtime validation, and ticket booking — all in isolation from the full app.
 
 ### Test Coverage
 
