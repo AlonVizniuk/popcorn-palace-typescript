@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
 
-
 @Entity()
 @Unique(['title'])
 export class Movie {

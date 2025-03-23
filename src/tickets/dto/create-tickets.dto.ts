@@ -9,5 +9,5 @@ export class CreateTicketsDto {
   seatNumber: number;
 
   @IsUUID()
-  userId: string; 
+  userId: string;
 }

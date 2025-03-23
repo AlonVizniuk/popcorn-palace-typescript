@@ -37,6 +37,4 @@ export class ShowtimesController {
     async delete(@Param('id') id: number): Promise<void> {
         return this.showtimesService.remove(id);
     }
-
-
 }

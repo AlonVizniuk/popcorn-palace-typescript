@@ -14,4 +14,4 @@ import { Movie } from '../movies/movie.entity';
   controllers: [ShowtimesController],
   providers: [ShowtimesService],
 })
-export class ShowtimesModule {}
+export class ShowtimesModule { }

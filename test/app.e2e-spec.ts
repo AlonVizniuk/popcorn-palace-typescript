@@ -48,10 +48,10 @@ describe('Popcorn Palace E2E Tests', () => {
     const statuses = [res1, res2].map((res) =>
       res.status === 'fulfilled' ? res.value.status : res.reason?.status
     );
-    
+
     expect(statuses).toContain(200);
     expect(statuses).toContain(409);
-    
+
   });
 
   it('should prevent overlapping showtimes booked almost at the same moment', async () => {
@@ -62,7 +62,7 @@ describe('Popcorn Palace E2E Tests', () => {
       rating: 7.7,
       releaseYear: 2023,
     });
-  
+
     const Id = movie.body.id;
     const payload = {
       movieId: Id,
@@ -71,21 +71,21 @@ describe('Popcorn Palace E2E Tests', () => {
       endTime: '2025-07-01T17:00:00Z',
       price: 45.0,
     };
-  
+
     const res1 = await request(app.getHttpServer())
       .post('/showtimes')
       .send(payload);
-  
+
     await new Promise((resolve) => setTimeout(resolve, 10)); // ~10ms gap
-  
+
     const res2 = await request(app.getHttpServer())
       .post('/showtimes')
       .send(payload);
-  
-    expect([res1.status, res2.status]).toContain(200); 
-    expect([res1.status, res2.status]).toContain(409); 
+
+    expect([res1.status, res2.status]).toContain(200);
+    expect([res1.status, res2.status]).toContain(409);
   });
-  
+
 
   it('should prevent double booking the same seat at the same showtime at the same moment', async () => {
     const movie = await request(app.getHttpServer()).post('/movies').send({
@@ -120,8 +120,8 @@ describe('Popcorn Palace E2E Tests', () => {
     const statuses = [res1, res2].map((res) =>
       res.status === 'fulfilled' ? res.value.status : res.reason?.status
     );
-    
+
     expect(statuses).toContain(200);
-    expect(statuses).toContain(409);    
+    expect(statuses).toContain(409);
   });
 });

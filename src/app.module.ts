@@ -9,16 +9,16 @@ import { TicketsModule } from './tickets/tickets.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'sqlite', 
+      type: 'sqlite',
       database: 'popcorn_palace.sqlite',
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize: true, 
+      synchronize: true,
     }),
-    MoviesModule, 
-    ShowtimesModule, 
+    MoviesModule,
+    ShowtimesModule,
     TicketsModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

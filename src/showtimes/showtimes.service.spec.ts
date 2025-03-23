@@ -130,7 +130,7 @@ describe('ShowtimesService', () => {
       startTime: '2025-04-01T15:00:00Z',
       endTime: '2025-04-01T18:00:00Z',
     };
-  
+
     const existingShowtime = {
       id: 1,
       theater: 'Main Hall',
@@ -139,25 +139,25 @@ describe('ShowtimesService', () => {
       price: 50.0,
       movieId: 1,
     };
-  
+
     (showtimeRepo.findOne as jest.Mock).mockResolvedValue(existingShowtime);
     (movieRepo.findOne as jest.Mock).mockResolvedValue({ id: 1, duration: 150 });
     (showtimeRepo.find as jest.Mock).mockResolvedValue([]);
-  
+
     await expect(service.update(1, dto)).rejects.toThrow('Price must be greater than 0');
-  });  
+  });
 
   it('should return the showtime if found', async () => {
     const mockShowtime = { id: 1, theater: 'Main Hall' } as Showtime;
     (showtimeRepo.findOne as jest.Mock).mockResolvedValue(mockShowtime);
-  
+
     const result = await service.findOneById(1);
     expect(result).toBe(mockShowtime);
   });
-  
+
   it('should throw if showtime is not found', async () => {
     (showtimeRepo.findOne as jest.Mock).mockResolvedValue(undefined);
-  
+
     await expect(service.findOneById(999)).rejects.toThrow('Showtime with ID 999 not found');
   });
 });
